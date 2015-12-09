@@ -13,7 +13,20 @@ BuildRequires: opencl-headers ocl-icd-devel
 BuildRequires: boost-devel
 BuildRequires: eigen3-devel
 
+
 %description
+ViennaCL provides high level C++ interfaces for linear algebra routines on CPUs
+and GPUs using CUDA, OpenCL, and OpenMP. The focus is on generic implementations
+of iterative solvers often used for large linear systems and simple integration
+into existing projects.
+
+%package devel
+Summary: Linear algebra and solver library using CUDA, OpenCL, and OpenMP
+Requires: opencl-headers ocl-icd-devel
+Requires: boost-devel
+Requires: eigen3-devel
+
+%description devel
 ViennaCL provides high level C++ interfaces for linear algebra routines on CPUs
 and GPUs using CUDA, OpenCL, and OpenMP. The focus is on generic implementations
 of iterative solvers often used for large linear systems and simple integration
@@ -25,7 +38,7 @@ into existing projects.
 %build
 pushd build
         %cmake .. \
-        -DINSTALL_CMAKE_DIR:PATH=%{_datadir}/%{name}/cmake \
+        -DINSTALL_CMAKE_DIR:PATH=%{_datadir}/cmake \
         -DENABLE_ASAN=ON \
         -DVIENNACL_WITH_OPENCL=ON \
         -DBUILD_EXAMPLES=ON \
@@ -50,11 +63,11 @@ pushd build
 popd
 
 
-%files
+%files devel
 %doc README
 %license LICENSE
 %{_includedir}/%{name}
-%{_datadir}/%{name}/cmake
+%{_datadir}/cmake/*
 
 
 %changelog
