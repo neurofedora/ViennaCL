@@ -1,6 +1,6 @@
 Name:          viennacl
-Version:       1.7.0
-Release:       2%{?dist}
+Version:       1.7.1
+Release:       1%{?dist}
 Summary:       Linear algebra and solver library using CUDA, OpenCL, and OpenMP
 License:       MIT
 URL:           http://viennacl.sourceforge.net/
@@ -72,10 +72,11 @@ pushd build
         %make_install
 popd
 
-#error execution tests -  http://sourceforge.net/p/viennacl/mailman/message/34697733/
 %check
 pushd build
-        ctest -VV ||:
+        ctest -VV \
+        -I 1,59,1,61,62,63,64,65,66,67,68,69,70,71,72,73 \
+        -E  bisect-opencl  structured-matrices-opencl
 popd
 
 
@@ -93,6 +94,9 @@ popd
 
 
 %changelog
+* Thu Jan 21 2016 Ilya Gradina <ilya.gradina@gmail.com> - 1.7.1-1
+- update to 1.7.1
+ 
 * Sat Dec 19 2015 Ilya Gradina <ilya.gradina@gmail.com> - 1.7.0-2
 - add devel, doc and example files
 - trivial fixes in spec
