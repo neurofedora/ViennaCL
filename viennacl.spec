@@ -1,6 +1,12 @@
+%ifnarch %{ix86} x86_64 %{arm}
+%bcond_with tests
+%else
+%bcond_without tests
+%endif
+
 Name:          viennacl
 Version:       1.7.1
-Release:       1%{?dist}
+Release:       2%{?dist}
 Summary:       Linear algebra and solver library using CUDA, OpenCL, and OpenMP
 License:       MIT
 URL:           http://viennacl.sourceforge.net/
@@ -8,10 +14,14 @@ Source0:       http://sourceforge.net/projects/%{name}/files/1.7.x/ViennaCL-%{ve
 BuildArch:     noarch
 
 BuildRequires: gcc-c++ cmake
-BuildRequires: opencl-headers ocl-icd-devel pocl
-BuildRequires: boost-devel
-BuildRequires: eigen3-devel
+BuildRequires: opencl-headers ocl-icd-devel
+Buildrequires: boost-devel
+%if %{with tests}
+BuildRequires: pocl
+BuildRequires: clang
+%endif
 
+ExclusiveArch: x86_64
 
 %description
 ViennaCL provides high level C++ interfaces for linear algebra routines on CPUs
@@ -37,31 +47,18 @@ and GPUs using CUDA, OpenCL, and OpenMP. The focus is on generic implementations
 of iterative solvers often used for large linear systems and simple integration
 into existing projects.
 
-%package example
-Summary: Examples for %{name}
-
-%description example
-ViennaCL provides high level C++ interfaces for linear algebra routines on CPUs
-and GPUs using CUDA, OpenCL, and OpenMP. The focus is on generic implementations
-of iterative solvers often used for large linear systems and simple integration
-into existing projects.
-
 
 %prep
 %autosetup -n ViennaCL-%{version}
 rm -vrf CL
+mkdir -p %{buildroot}%{_datadir}/ViennaCL/CMake
 
 %build
 pushd build
         %cmake .. \
-        -DINSTALL_CMAKE_DIR:PATH=%{_datadir}/cmake \
-        -DENABLE_ASAN=ON \
+        -DINSTALL_CMAKE_DIR:PATH=%{_datadir}/ViennaCL/CMake \
         -DVIENNACL_WITH_OPENCL=ON \
-        -DBUILD_EXAMPLES=ON \
-        -DENABLE_OPENCL=ON \
-        -DENABLE_EIGEN=ON \
-        -DEIGEN_INCLUDE_DIR:PATH=%{_includedir}/eigen3 \
-        -DENABLE_UBLAS=ON \
+        -DVIENNACL_WITH_OPENMP=ON \
         -DBUILD_TESTING=ON
         %make_build
 popd
@@ -72,30 +69,31 @@ pushd build
         %make_install
 popd
 
+%if %{with tests}
 %check
 pushd build
-        ctest -VV \
-        -I 1,59,1,61,62,63,64,65,66,67,68,69,70,71,72,73 \
-        -E  bisect-opencl  structured-matrices-opencl
+        ctest -VV --output-on-failure -E "(bisect-opencl|sparse_prod-opencl)"
 popd
-
+%endif
 
 %files devel
 %doc README
 %license LICENSE
 %{_includedir}/%{name}
-%{_datadir}/cmake/*
+%{_datadir}/ViennaCL/*
 
 %files doc
 %doc doc/html
 
-%files example
-%doc examples
 
 
 %changelog
+* Wed Nov 30 2016 Ilya Gradina <ilya.gradina@gmail.com> - 1.7.1-2
+- skipped two tests, status tests: https://sourceforge.net/p/viennacl/mailman/message/35517365/ 
+
 * Thu Jan 21 2016 Ilya Gradina <ilya.gradina@gmail.com> - 1.7.1-1
 - update to 1.7.1
+- deleted example files
  
 * Sat Dec 19 2015 Ilya Gradina <ilya.gradina@gmail.com> - 1.7.0-2
 - add devel, doc and example files
